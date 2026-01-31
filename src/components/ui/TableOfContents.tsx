@@ -1,102 +1,108 @@
-import { useState, useEffect } from 'react'
-import { List } from 'lucide-react'
-import { cn } from '@/lib/utils'
+'use client';
 
-interface TocItem {
-  id: string
-  text: string
-  level: number
-}
+import { useState, useEffect } from 'react';
+import { List, ChevronDown, ChevronUp } from 'lucide-react';
+import { extractHeadings, cn } from '@/lib/utils';
 
 interface TableOfContentsProps {
-  content: string
+  content: string;
+  className?: string;
 }
 
-export default function TableOfContents({ content }: TableOfContentsProps) {
-  const [items, setItems] = useState<TocItem[]>([])
-  const [activeId, setActiveId] = useState<string>('')
+export function TableOfContents({ content, className }: TableOfContentsProps) {
+  const [headings, setHeadings] = useState<Array<{ id: string; text: string; level: number }>>([]);
+  const [activeId, setActiveId] = useState<string>('');
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
-    // Extract headings from content
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(content, 'text/html')
-    const headings = doc.querySelectorAll('h2, h3')
-
-    const tocItems: TocItem[] = []
-    headings.forEach((heading, index) => {
-      const id = heading.id || `heading-${index}`
-      tocItems.push({
-        id,
-        text: heading.textContent || '',
-        level: parseInt(heading.tagName.charAt(1)),
-      })
-    })
-
-    setItems(tocItems)
-  }, [content])
+    const extracted = extractHeadings(content);
+    setHeadings(extracted);
+  }, [content]);
 
   useEffect(() => {
-    if (items.length === 0) return
+    if (headings.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
+            setActiveId(entry.target.id);
           }
-        })
+        });
       },
       {
-        rootMargin: '-100px 0px -70% 0px',
+        rootMargin: '-80px 0px -80% 0px',
         threshold: 0,
       }
-    )
+    );
 
-    items.forEach((item) => {
-      const element = document.getElementById(item.id)
-      if (element) observer.observe(element)
-    })
+    headings.forEach((heading) => {
+      const element = document.getElementById(heading.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
 
-    return () => observer.disconnect()
-  }, [items])
+    return () => observer.disconnect();
+  }, [headings]);
 
-  if (items.length < 2) return null
-
-  const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      const top = element.offsetTop - 100
-      window.scrollTo({ top, behavior: 'smooth' })
-    }
+  if (headings.length === 0) {
+    return null;
   }
 
-  return (
-    <div className="card p-5">
-      <div className="flex items-center space-x-2 mb-4">
-        <List className="w-5 h-5 text-primary-500" />
-        <h3 className="font-bold text-gray-900 dark:text-gray-100">Índice</h3>
-      </div>
+  const handleClick = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 100;
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementPosition - offset,
+        behavior: 'smooth',
+      });
+    }
+  };
 
-      <nav>
-        <ul className="space-y-1">
-          {items.map((item) => (
-            <li key={item.id}>
+  return (
+    <nav className={cn('card p-4', className)}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <div className="flex items-center space-x-2">
+          <List className="w-5 h-5 text-primary" />
+          <h3 className="font-bold text-gray-900 dark:text-white">
+            Table of Contents
+          </h3>
+        </div>
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4 text-gray-500" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-gray-500" />
+        )}
+      </button>
+
+      {isExpanded && (
+        <ul className="mt-4 space-y-2 border-l-2 border-gray-200 dark:border-gray-700 ml-2">
+          {headings.map((heading) => (
+            <li
+              key={heading.id}
+              style={{ paddingLeft: `${(heading.level - 2) * 12 + 12}px` }}
+            >
               <button
-                onClick={() => scrollToHeading(item.id)}
+                onClick={() => handleClick(heading.id)}
                 className={cn(
-                  'w-full text-left text-sm py-1.5 px-3 rounded transition-colors',
-                  item.level === 3 && 'pl-6',
-                  activeId === item.id
-                    ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  'text-left text-sm transition-colors hover:text-primary',
+                  activeId === heading.id
+                    ? 'text-primary font-medium'
+                    : 'text-gray-600 dark:text-gray-400'
                 )}
               >
-                {item.text}
+                {heading.text}
               </button>
             </li>
           ))}
         </ul>
-      </nav>
-    </div>
-  )
+      )}
+    </nav>
+  );
 }

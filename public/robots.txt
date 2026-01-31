@@ -1,4 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
+# Sitemap
 Sitemap: https://vercel-flow-1769874094.com.br/sitemap.xml

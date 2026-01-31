@@ -1,89 +1,179 @@
-# TechPulse Daily
+# BVX Next.js Base Template
 
-Your Daily Dose of Tech Innovation - A modern tech news and tutorials website.
+Template base para geração de sites BVX com Next.js 14 (App Router).
 
-## Features
+## Serviços Obrigatórios
 
-- 📱 Fully responsive design
-- 🌙 Dark mode support
-- 🔍 Article search
-- 📧 Newsletter subscription
-- 📊 PostHog analytics integration
-- 📺 Revive ad server integration
-- ⚡ Fast performance with Vite
+### ArticleService
+Busca artigos do backend BVX.
 
-## Tech Stack
+```tsx
+import { getArticles, getArticleBySlug, getFeaturedArticle } from '@/services/ArticleService';
 
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS
-- **Routing**: React Router v6
-- **State Management**: TanStack Query
-- **Analytics**: PostHog
-- **Ads**: Revive Adserver
+// Buscar artigos paginados
+const { data, meta } = await getArticles({ page: 1, pageSize: 10 });
 
-## Getting Started
+// Buscar artigo por slug
+const article = await getArticleBySlug('meu-artigo');
 
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Installation
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+// Buscar artigo em destaque
+const featured = await getFeaturedArticle();
 ```
 
-### Environment Variables
+### NewsletterService
+Inscrição na newsletter integrada ao backend.
 
-Create a `.env.local` file based on `.env.production`:
+```tsx
+import { NewsletterService } from '@/services/NewsletterService';
+
+// Validar email
+if (NewsletterService.validateEmail(email)) {
+  const response = await NewsletterService.subscribe({ email, source: 'footer' });
+}
+```
+
+### AnalyticsService
+Tracking com PostHog.
+
+```tsx
+import { AnalyticsService } from '@/services/AnalyticsService';
+
+// Inicializar (automático via Scripts component)
+await AnalyticsService.initialize();
+
+// Capturar eventos
+AnalyticsService.captureArticleView({ slug, title, category });
+AnalyticsService.captureToolUsed('calculadora', 'calculator', 'finance');
+```
+
+## Hooks Obrigatórios
+
+### useScrollDepth
+Rastreia scroll em páginas de artigo.
+
+```tsx
+import { useScrollDepth } from '@/hooks/useScrollDepth';
+
+function ArticleDetail({ article }) {
+  // IMPORTANTE: Chamar ANTES de qualquer return condicional
+  useScrollDepth(article?.id, article?.slug, !!article, 50);
+  
+  if (!article) return null;
+  return <div>...</div>;
+}
+```
+
+### useSearchTracking
+Rastreia buscas.
+
+```tsx
+import { useSearchTracking, trackSearchResultClick } from '@/hooks/useSearchTracking';
+
+function SearchPage({ query, results }) {
+  useSearchTracking(query, results.length, 'search-page');
+  
+  return (
+    <ul>
+      {results.map((r, i) => (
+        <a onClick={() => trackSearchResultClick(query, i, r.title)}>
+          {r.title}
+        </a>
+      ))}
+    </ul>
+  );
+}
+```
+
+### useToolTracking
+Rastreia uso de calculadoras/ferramentas.
+
+```tsx
+import { trackToolUsed } from '@/hooks/useToolTracking';
+
+function Calculator() {
+  const handleCalculate = () => {
+    // lógica...
+    trackToolUsed('juros_compostos', 'calculator', 'finance');
+  };
+}
+```
+
+## Componentes Obrigatórios
+
+### Scripts
+Inicializa PostHog e Revive Ads. **DEVE estar no layout principal.**
+
+```tsx
+// app/layout.tsx
+import { Scripts } from '@/components/Scripts';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Scripts />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+### AdSpot
+Exibe anúncios Revive nas zonas corretas.
+
+```tsx
+import { AdSpot } from '@/components/AdSpot';
+
+<AdSpot position="header" />
+<AdSpot position="sidebar" />
+<AdSpot position="in-content" />
+<AdSpot position="sticky-bottom" />
+```
+
+### NewsletterForm
+Formulário de newsletter integrado.
+
+```tsx
+import { NewsletterForm } from '@/components/NewsletterForm';
+
+<NewsletterForm source="footer" variant="compact" />
+<NewsletterForm 
+  title="Newsletter" 
+  description="Receba nossas dicas"
+  source="article_cta"
+/>
+```
+
+## Variáveis de Ambiente
 
 ```env
-VITE_SITE_ID=your-site-id
-VITE_SITE_NAME=your-site-name
-VITE_SITE_URL=https://your-domain.com
-VITE_API_URL=https://api.example.com
-VITE_POSTHOG_KEY=your-posthog-key
-VITE_POSTHOG_HOST=https://us.i.posthog.com
-VITE_REVIVE_URL=https://ads.example.com
-VITE_REVIVE_ID=1
+# Site
+NEXT_PUBLIC_SITE_ID=xxx
+NEXT_PUBLIC_SITE_NAME=Meu Site
+NEXT_PUBLIC_SITE_URL=https://meusite.com
+NEXT_PUBLIC_LOCALE=pt-BR
+
+# API
+NEXT_PUBLIC_API_URL=https://api.bvx.com
+
+# Analytics (PostHog)
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxx
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+# Ads (Revive)
+NEXT_PUBLIC_REVIVE_URL=https://ads.bvx.com
+NEXT_PUBLIC_REVIVE_ID=xxx
+NEXT_PUBLIC_REVIVE_ZONE_HEADER=1
+NEXT_PUBLIC_REVIVE_ZONE_SIDEBAR=2
+NEXT_PUBLIC_REVIVE_ZONE_INARTICLE_1=3
+NEXT_PUBLIC_REVIVE_ZONE_STICKY_FOOTER=4
 ```
 
-## Project Structure
+## Regras de Ouro
 
-```
-src/
-├── components/
-│   ├── ads/           # Ad components (Revive)
-│   ├── layout/        # Header, Footer, Sidebar
-│   └── ui/            # Reusable UI components
-├── contexts/          # React contexts (Theme)
-├── hooks/             # Custom hooks
-├── lib/               # Utilities and constants
-├── pages/             # Page components
-├── services/          # API and external services
-└── types/             # TypeScript types
-```
-
-## Routes
-
-- `/` - Homepage
-- `/artigo/:slug` - Article detail
-- `/categoria/:slug` - Category listing
-- `/sobre` - About page
-- `/contato` - Contact page
-- `/busca` - Search page
-
-## License
-
-MIT License
+1. **NUNCA criar dados mockados** - Use sempre os serviços reais
+2. **Rota de artigo: `/artigo/[slug]`** (SINGULAR) - NUNCA `/artigos/[slug]`
+3. **Hooks ANTES de returns condicionais**
+4. **Scripts component no layout** - Obrigatório para analytics/ads
+5. **Honeypot em formulários** - Campo `website_url` oculto

@@ -1,53 +1,49 @@
+/**
+ * Site Configuration Constants
+ * TechPulse Daily - Your Daily Dose of Tech Innovation
+ */
+
 export const SITE_CONFIG = {
-  id: import.meta.env.VITE_SITE_ID || '',
   name: 'TechPulse Daily',
   tagline: 'Your Daily Dose of Tech Innovation',
-  url: import.meta.env.VITE_SITE_URL || 'https://vercel-flow-1769874094.com.br',
-  description: import.meta.env.VITE_SITE_DESCRIPTION || 'TechPulse Daily delivers cutting-edge technology news, software reviews, tutorials, and insights into the digital world.',
-  locale: import.meta.env.VITE_LOCALE || 'pt-BR',
-  apiUrl: import.meta.env.VITE_API_URL || 'https://painel.bvx.my.srv.br',
-  contentApiUrl: import.meta.env.VITE_CONTENT_API_BASE_URL || 'https://painel.bvx.my.srv.br',
-}
-
-export const POSTHOG_CONFIG = {
-  key: import.meta.env.VITE_POSTHOG_KEY || '',
-  host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
-}
-
-export const REVIVE_CONFIG = {
-  url: import.meta.env.VITE_REVIVE_URL || '',
-  id: import.meta.env.VITE_REVIVE_ID || '1',
-  zones: {
-    header: import.meta.env.VITE_REVIVE_ZONE_HEADER || '1278',
-    sidebar: import.meta.env.VITE_REVIVE_ZONE_SIDEBAR || '1279',
-    inArticle1: import.meta.env.VITE_REVIVE_ZONE_INARTICLE_1 || '1280',
-    inArticle2: import.meta.env.VITE_REVIVE_ZONE_INARTICLE_2 || '1281',
-    stickyFooter: import.meta.env.VITE_REVIVE_ZONE_STICKY_FOOTER || '1282',
+  description: 'TechPulse Daily delivers cutting-edge technology news, software reviews, tutorials, and insights into the digital world.',
+  url: 'https://vercel-flow-1769874094.com.br',
+  locale: 'en-US',
+  colors: {
+    primary: '#3B82F6',
+    secondary: '#10B981',
+    accent: '#8B5CF6',
   },
-}
+} as const;
+
+export const NAVIGATION_ITEMS = [
+  { label: 'Home', href: '/' },
+  { label: 'News', href: '/categoria/news' },
+  { label: 'Tutorials', href: '/categoria/tutorials' },
+  { label: 'Reviews', href: '/categoria/reviews' },
+  { label: 'AI & ML', href: '/categoria/ai-ml' },
+  { label: 'About', href: '/about' },
+] as const;
 
 export const CATEGORIES = [
-  { name: 'Notícias', slug: 'noticias', description: 'Últimas notícias de tecnologia' },
-  { name: 'Tutoriais', slug: 'tutoriais', description: 'Guias passo a passo' },
-  { name: 'Reviews', slug: 'reviews', description: 'Análises de produtos e software' },
-  { name: 'IA & ML', slug: 'ia-ml', description: 'Inteligência Artificial e Machine Learning' },
-  { name: 'Desenvolvimento', slug: 'desenvolvimento', description: 'Dicas de programação' },
-  { name: 'Cloud', slug: 'cloud', description: 'Computação em nuvem e DevOps' },
-]
-
-export const NAV_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'Notícias', href: '/categoria/noticias' },
-  { label: 'Tutoriais', href: '/categoria/tutoriais' },
-  { label: 'Reviews', href: '/categoria/reviews' },
-  { label: 'IA & ML', href: '/categoria/ia-ml' },
-  { label: 'Sobre', href: '/sobre' },
-]
+  { name: 'News', slug: 'news', description: 'Latest technology news and updates' },
+  { name: 'Tutorials', slug: 'tutorials', description: 'Step-by-step guides and how-tos' },
+  { name: 'Reviews', slug: 'reviews', description: 'In-depth product and software reviews' },
+  { name: 'AI & ML', slug: 'ai-ml', description: 'Artificial Intelligence and Machine Learning' },
+  { name: 'Development', slug: 'development', description: 'Software development tips and best practices' },
+  { name: 'Cloud', slug: 'cloud', description: 'Cloud computing and DevOps' },
+] as const;
 
 export const SOCIAL_LINKS = {
-  twitter: 'https://twitter.com/techpulsedaily',
-  facebook: 'https://facebook.com/techpulsedaily',
-  instagram: 'https://instagram.com/techpulsedaily',
-  linkedin: 'https://linkedin.com/company/techpulsedaily',
-  github: 'https://github.com/techpulsedaily',
-}
+  twitter: '#',
+  linkedin: '#',
+  github: '#',
+  facebook: '#',
+} as const;
+
+export const SEO_CONFIG = {
+  titleTemplate: '%s | TechPulse Daily',
+  defaultTitle: 'TechPulse Daily - Your Daily Dose of Tech Innovation',
+  ogImage: '/og-image.png',
+  twitterHandle: '@techpulsedaily',
+} as const;

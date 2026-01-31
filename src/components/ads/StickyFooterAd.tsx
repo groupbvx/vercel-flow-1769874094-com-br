@@ -1,28 +1,61 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import ReviveAd from './ReviveAd'
-import { REVIVE_CONFIG } from '@/lib/constants'
+'use client';
 
-export default function StickyFooterAd() {
-  const [isVisible, setIsVisible] = useState(true)
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { AdSpot } from '@/components/AdSpot';
+import { cn } from '@/lib/utils';
 
-  if (!REVIVE_CONFIG.url || !isVisible) return null
+export function StickyFooterAd() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  useEffect(() => {
+    // Show ad after scrolling down
+    const handleScroll = () => {
+      if (window.scrollY > 300 && !isDismissed) {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isDismissed]);
+
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    setIsVisible(false);
+    // Remember dismissal for this session
+    sessionStorage.setItem('stickyAdDismissed', 'true');
+  };
+
+  useEffect(() => {
+    // Check if already dismissed in this session
+    if (sessionStorage.getItem('stickyAdDismissed') === 'true') {
+      setIsDismissed(true);
+    }
+  }, []);
+
+  if (!isVisible || isDismissed) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-      <div className="container-main py-2 relative">
+    <div
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-40',
+        'bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-lg',
+        'transform transition-transform duration-300',
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      )}
+    >
+      <div className="container-main relative">
         <button
-          onClick={() => setIsVisible(false)}
-          className="absolute right-2 top-1 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
-          aria-label="Fechar anúncio"
+          onClick={handleDismiss}
+          className="absolute right-2 top-1 z-10 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          aria-label="Dismiss ad"
         >
-          <X className="w-4 h-4 text-gray-500" />
+          <X className="w-4 h-4" />
         </button>
-        <ReviveAd
-          zoneId={REVIVE_CONFIG.zones.stickyFooter}
-          className="flex justify-center"
-        />
+        <AdSpot position="sticky-bottom" className="min-h-[50px] max-h-[90px]" />
       </div>
     </div>
-  )
+  );
 }

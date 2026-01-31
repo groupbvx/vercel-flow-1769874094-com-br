@@ -1,80 +1,63 @@
-export interface Article {
-  id: string
-  slug: string
-  title: string
-  excerpt: string
-  content: string
-  featuredImage: string | null
-  category: Category
-  author: Author
-  tags: string[]
-  publishedAt: string
-  updatedAt: string
-  readTime: number
-  views: number
-  status: 'draft' | 'published' | 'archived'
-}
+/**
+ * Type definitions for TechPulse Daily
+ */
 
-export interface Category {
-  id: string
-  name: string
-  slug: string
-  description: string
-  articleCount?: number
+export interface Article {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  mainImage?: string;
+  imageUrl?: string;
+  author?: Author;
+  publishedAt: string;
+  updatedAt?: string;
+  tags?: string[];
+  category?: Category;
+  categorySlug?: string;
+  readingTime?: number;
 }
 
 export interface Author {
-  id: string
-  name: string
-  slug: string
-  avatar: string | null
-  bio: string
-  socialLinks?: {
-    twitter?: string
-    linkedin?: string
-    github?: string
-  }
+  id?: string;
+  name: string;
+  avatar?: string;
+  bio?: string;
+}
+
+export interface Category {
+  id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  articleCount?: number;
 }
 
 export interface PaginatedResponse<T> {
-  data: T[]
+  data: T[];
   meta: {
-    currentPage: number
-    totalPages: number
-    totalItems: number
-    itemsPerPage: number
-  }
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }
 
-export interface ApiError {
-  message: string
-  statusCode: number
-}
-
-export interface NewsletterSubscription {
-  email: string
-  source?: string
-}
-
-export interface ContactFormData {
-  name: string
-  email: string
-  subject: string
-  message: string
-}
-
-export interface SearchParams {
-  query?: string
-  category?: string
-  page?: number
-  limit?: number
+export interface NavigationItem {
+  label: string;
+  href: string;
 }
 
 export interface SiteConfig {
-  id: string
-  name: string
-  url: string
-  description: string
-  locale: string
-  apiUrl: string
+  name: string;
+  tagline: string;
+  description: string;
+  url: string;
+  locale: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
 }

@@ -1,117 +1,200 @@
-import { Link } from 'react-router-dom'
-import { Clock, Calendar } from 'lucide-react'
-import { formatDate, getImageUrl, cn } from '@/lib/utils'
-import type { Article } from '@/types'
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { Calendar, Clock, User } from 'lucide-react';
+import { cn, formatDate, getImageUrl, truncateText } from '@/lib/utils';
+import type { Article } from '@/types';
 
 interface ArticleCardProps {
-  article: Article
-  variant?: 'default' | 'horizontal' | 'compact'
+  article: Article;
+  variant?: 'default' | 'horizontal' | 'featured';
+  className?: string;
+  showExcerpt?: boolean;
+  showCategory?: boolean;
+  showAuthor?: boolean;
 }
 
-export default function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
+export function ArticleCard({
+  article,
+  variant = 'default',
+  className,
+  showExcerpt = true,
+  showCategory = true,
+  showAuthor = false,
+}: ArticleCardProps) {
+  const imageUrl = getImageUrl(article.mainImage || article.imageUrl, '/placeholder.jpg');
+
   if (variant === 'horizontal') {
     return (
-      <Link to={`/artigo/${article.slug}`} className="card overflow-hidden group">
-        <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-48 md:w-56 flex-shrink-0">
-            <div className="relative aspect-video sm:aspect-[4/3] overflow-hidden">
-              <img
-                src={getImageUrl(article.featuredImage)}
-                alt={article.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-            </div>
+      <article className={cn('card-hover flex flex-col sm:flex-row gap-4', className)}>
+        {/* Image */}
+        <Link
+          href={`/artigo/${article.slug}`}
+          className="relative w-full sm:w-48 h-32 sm:h-full flex-shrink-0"
+        >
+          <div className="relative w-full h-32 sm:h-full min-h-[120px]">
+            <Image
+              src={imageUrl}
+              alt={article.title}
+              fill
+              className="object-cover rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none"
+              sizes="(max-width: 640px) 100vw, 192px"
+            />
           </div>
-          <div className="flex-1 p-4 sm:p-5 flex flex-col">
+        </Link>
+
+        {/* Content */}
+        <div className="flex-1 p-4 sm:py-4 sm:pr-4 sm:pl-0">
+          {showCategory && article.category && (
             <Link
-              to={`/categoria/${article.category.slug}`}
-              className="text-xs font-medium text-primary-500 hover:text-primary-600 uppercase tracking-wide mb-2"
-              onClick={(e) => e.stopPropagation()}
+              href={`/categoria/${article.categorySlug || article.category}`}
+              className="badge-primary mb-2"
             >
-              {article.category.name}
+              {typeof article.category === 'string' ? article.category : article.category.name}
             </Link>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-primary-500 transition-colors mb-2">
+          )}
+
+          <Link href={`/artigo/${article.slug}`}>
+            <h3 className="font-bold text-gray-900 dark:text-white hover:text-primary transition-colors line-clamp-2 mb-2">
               {article.title}
             </h3>
+          </Link>
+
+          {showExcerpt && article.excerpt && (
             <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-              {article.excerpt}
+              {truncateText(article.excerpt, 120)}
             </p>
-            <div className="mt-auto flex items-center space-x-4 text-xs text-gray-500">
-              <span className="flex items-center space-x-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{formatDate(article.publishedAt)}</span>
-              </span>
-              <span className="flex items-center space-x-1">
+          )}
+
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {formatDate(article.publishedAt)}
+            </span>
+            {article.readingTime && (
+              <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{article.readTime} min</span>
+                {article.readingTime} min read
               </span>
-            </div>
+            )}
           </div>
         </div>
-      </Link>
-    )
+      </article>
+    );
   }
 
-  if (variant === 'compact') {
+  if (variant === 'featured') {
     return (
-      <Link to={`/artigo/${article.slug}`} className="flex space-x-3 group">
-        <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded">
-          <img
-            src={getImageUrl(article.featuredImage)}
+      <article className={cn('card-hover relative overflow-hidden group', className)}>
+        <Link href={`/artigo/${article.slug}`} className="block">
+          {/* Image */}
+          <div className="relative aspect-[16/9] md:aspect-[21/9]">
+            <Image
+              src={imageUrl}
+              alt={article.title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 1200px"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          </div>
+
+          {/* Content Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
+            {showCategory && article.category && (
+              <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-medium rounded-full mb-3">
+                {typeof article.category === 'string' ? article.category : article.category.name}
+              </span>
+            )}
+
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 line-clamp-2">
+              {article.title}
+            </h2>
+
+            {showExcerpt && article.excerpt && (
+              <p className="text-white/80 text-sm md:text-base line-clamp-2 mb-4 max-w-2xl">
+                {truncateText(article.excerpt, 200)}
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 text-sm text-white/70">
+              {showAuthor && article.author && (
+                <span className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {typeof article.author === 'string' ? article.author : article.author.name}
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {formatDate(article.publishedAt)}
+              </span>
+              {article.readingTime && (
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {article.readingTime} min read
+                </span>
+              )}
+            </div>
+          </div>
+        </Link>
+      </article>
+    );
+  }
+
+  // Default card
+  return (
+    <article className={cn('card-hover', className)}>
+      {/* Image */}
+      <Link href={`/artigo/${article.slug}`} className="block">
+        <div className="relative aspect-video">
+          <Image
+            src={imageUrl}
             alt={article.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-primary-500 transition-colors">
+      </Link>
+
+      {/* Content */}
+      <div className="p-4">
+        {showCategory && article.category && (
+          <Link
+            href={`/categoria/${article.categorySlug || article.category}`}
+            className="badge-primary mb-2"
+          >
+            {typeof article.category === 'string' ? article.category : article.category.name}
+          </Link>
+        )}
+
+        <Link href={`/artigo/${article.slug}`}>
+          <h3 className="font-bold text-gray-900 dark:text-white hover:text-primary transition-colors line-clamp-2 mb-2">
             {article.title}
-          </h4>
-          <span className="text-xs text-gray-500 mt-1 block">
+          </h3>
+        </Link>
+
+        {showExcerpt && article.excerpt && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+            {truncateText(article.excerpt, 100)}
+          </p>
+        )}
+
+        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5" />
             {formatDate(article.publishedAt)}
           </span>
-        </div>
-      </Link>
-    )
-  }
-
-  // Default variant
-  return (
-    <Link to={`/artigo/${article.slug}`} className="card overflow-hidden group">
-      <div className="relative aspect-video overflow-hidden">
-        <img
-          src={getImageUrl(article.featuredImage)}
-          alt={article.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-        <Link
-          to={`/categoria/${article.category.slug}`}
-          className="absolute top-3 left-3 px-3 py-1 bg-primary-500 text-white text-xs font-medium rounded-full hover:bg-primary-600 transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {article.category.name}
-        </Link>
-      </div>
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-primary-500 transition-colors mb-2">
-          {article.title}
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
-          {article.excerpt}
-        </p>
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span className="flex items-center space-x-1">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>{formatDate(article.publishedAt)}</span>
-          </span>
-          <span className="flex items-center space-x-1">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{article.readTime} min de leitura</span>
-          </span>
+          {article.readingTime && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              {article.readingTime} min
+            </span>
+          )}
         </div>
       </div>
-    </Link>
-  )
+    </article>
+  );
 }

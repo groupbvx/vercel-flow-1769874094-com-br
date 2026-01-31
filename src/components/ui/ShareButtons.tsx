@@ -1,86 +1,102 @@
-import { Twitter, Facebook, Linkedin, Link2, Share2 } from 'lucide-react'
-import { shareUrl, cn } from '@/lib/utils'
-import { trackShare } from '@/services/analytics'
-import { useState } from 'react'
+'use client';
+
+import { useState } from 'react';
+import { Twitter, Facebook, Linkedin, Link as LinkIcon, Check } from 'lucide-react';
+import { cn, isBrowser } from '@/lib/utils';
+import { AnalyticsService } from '@/services/AnalyticsService';
 
 interface ShareButtonsProps {
-  url: string
-  title: string
-  articleId: string
-  variant?: 'default' | 'compact'
+  url: string;
+  title: string;
+  articleId?: string;
+  className?: string;
 }
 
-export default function ShareButtons({ url, title, articleId, variant = 'default' }: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false)
+export function ShareButtons({ url, title, articleId, className }: ShareButtonsProps) {
+  const [copied, setCopied] = useState(false);
 
-  const handleShare = (platform: 'twitter' | 'facebook' | 'linkedin' | 'whatsapp') => {
-    trackShare(platform, articleId)
-    window.open(shareUrl(platform, url, title), '_blank', 'noopener,noreferrer,width=600,height=400')
-  }
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+
+  const shareLinks = {
+    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`,
+  };
+
+  const handleShare = (platform: string) => {
+    if (articleId) {
+      AnalyticsService.captureArticleShare(articleId, title, platform);
+    }
+    
+    if (isBrowser()) {
+      window.open(shareLinks[platform as keyof typeof shareLinks], '_blank', 'width=600,height=400');
+    }
+  };
 
   const handleCopyLink = async () => {
+    if (!isBrowser()) return;
+    
     try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      trackShare('copy', articleId)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      
+      if (articleId) {
+        AnalyticsService.captureArticleShare(articleId, title, 'copy_link');
+      }
+
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err)
+      console.error('Failed to copy:', err);
     }
-  }
-
-  const buttonClass = cn(
-    'p-2 rounded-lg transition-colors',
-    variant === 'compact' ? 'p-1.5' : 'p-2'
-  )
-
-  const iconClass = variant === 'compact' ? 'w-4 h-4' : 'w-5 h-5'
+  };
 
   return (
-    <div className="flex items-center space-x-2">
-      {variant === 'default' && (
-        <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">Compartilhar:</span>
-      )}
+    <div className={cn('flex items-center gap-2', className)}>
+      <span className="text-sm text-gray-500 dark:text-gray-400 mr-2 hidden sm:inline">
+        Share:
+      </span>
 
       <button
         onClick={() => handleShare('twitter')}
-        className={cn(buttonClass, 'hover:bg-[#1DA1F2]/10 text-[#1DA1F2]')}
-        aria-label="Compartilhar no Twitter"
-        title="Twitter"
+        className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-[#1DA1F2] hover:text-white transition-all"
+        aria-label="Share on Twitter"
       >
-        <Twitter className={iconClass} />
+        <Twitter className="w-4 h-4" />
       </button>
 
       <button
         onClick={() => handleShare('facebook')}
-        className={cn(buttonClass, 'hover:bg-[#4267B2]/10 text-[#4267B2]')}
-        aria-label="Compartilhar no Facebook"
-        title="Facebook"
+        className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-[#1877F2] hover:text-white transition-all"
+        aria-label="Share on Facebook"
       >
-        <Facebook className={iconClass} />
+        <Facebook className="w-4 h-4" />
       </button>
 
       <button
         onClick={() => handleShare('linkedin')}
-        className={cn(buttonClass, 'hover:bg-[#0A66C2]/10 text-[#0A66C2]')}
-        aria-label="Compartilhar no LinkedIn"
-        title="LinkedIn"
+        className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-[#0A66C2] hover:text-white transition-all"
+        aria-label="Share on LinkedIn"
       >
-        <Linkedin className={iconClass} />
+        <Linkedin className="w-4 h-4" />
       </button>
 
       <button
         onClick={handleCopyLink}
         className={cn(
-          buttonClass,
-          'hover:bg-gray-100 dark:hover:bg-gray-800',
-          copied ? 'text-green-500' : 'text-gray-500 dark:text-gray-400'
+          'w-9 h-9 flex items-center justify-center rounded-full transition-all',
+          copied
+            ? 'bg-green-500 text-white'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
         )}
-        aria-label={copied ? 'Link copiado!' : 'Copiar link'}
-        title={copied ? 'Link copiado!' : 'Copiar link'}
+        aria-label="Copy link"
       >
-        <Link2 className={iconClass} />
+        {copied ? (
+          <Check className="w-4 h-4" />
+        ) : (
+          <LinkIcon className="w-4 h-4" />
+        )}
       </button>
     </div>
-  )
+  );
 }

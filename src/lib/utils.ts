@@ -1,79 +1,145 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { format, formatDistanceToNow, parseISO } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
+/**
+ * Merge Tailwind CSS classes with clsx
+ */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: string | Date): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date
-  return format(parsedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })
+/**
+ * Format date for display
+ */
+export function formatDate(dateString: string, locale = 'en-US'): string {
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  } catch {
+    return dateString;
+  }
 }
 
-export function formatRelativeDate(date: string | Date): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date
-  return formatDistanceToNow(parsedDate, { addSuffix: true, locale: ptBR })
+/**
+ * Format relative time (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(dateString: string, locale = 'en-US'): string {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+    if (diffInSeconds < 60) {
+      return rtf.format(-diffInSeconds, 'second');
+    }
+    if (diffInSeconds < 3600) {
+      return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
+    }
+    if (diffInSeconds < 86400) {
+      return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
+    }
+    if (diffInSeconds < 604800) {
+      return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
+    }
+    
+    return formatDate(dateString, locale);
+  } catch {
+    return dateString;
+  }
 }
 
-export function calculateReadTime(content: string): number {
-  const wordsPerMinute = 200
-  const words = content.trim().split(/\s+/).length
-  return Math.ceil(words / wordsPerMinute)
+/**
+ * Calculate reading time from content
+ */
+export function calculateReadingTime(content: string): number {
+  const wordsPerMinute = 200;
+  const text = content.replace(/<[^>]*>/g, '');
+  const wordCount = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
+/**
+ * Truncate text to specified length
+ */
 export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength).trim() + '...'
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trim() + '...';
 }
 
+/**
+ * Generate slug from text
+ */
 export function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
 }
 
-export function getImageUrl(path: string | null, fallback = '/placeholder.svg'): string {
-  if (!path) return fallback
-  if (path.startsWith('http')) return path
-  return `${import.meta.env.VITE_API_URL}${path}`
+/**
+ * Get image URL with fallback
+ */
+export function getImageUrl(
+  url: string | undefined | null,
+  fallback = '/placeholder.jpg'
+): string {
+  if (!url) return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return url;
+  return `/${url}`;
 }
 
-export function shareUrl(platform: 'twitter' | 'facebook' | 'linkedin' | 'whatsapp', url: string, title: string): string {
-  const encodedUrl = encodeURIComponent(url)
-  const encodedTitle = encodeURIComponent(title)
+/**
+ * Generate meta title with template
+ */
+export function generateMetaTitle(title: string, template = '%s | TechPulse Daily'): string {
+  return template.replace('%s', title);
+}
 
-  switch (platform) {
-    case 'twitter':
-      return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
-    case 'facebook':
-      return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-    case 'linkedin':
-      return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`
-    case 'whatsapp':
-      return `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`
-    default:
-      return url
+/**
+ * Extract headings from HTML content for TOC
+ */
+export function extractHeadings(content: string): Array<{ id: string; text: string; level: number }> {
+  const headingRegex = /<h([2-4])[^>]*(?:id="([^"]*)")?[^>]*>([^<]+)<\/h\1>/gi;
+  const headings: Array<{ id: string; text: string; level: number }> = [];
+  let match;
+
+  while ((match = headingRegex.exec(content)) !== null) {
+    const level = parseInt(match[1]);
+    const id = match[2] || slugify(match[3]);
+    const text = match[3].trim();
+    headings.push({ id, text, level });
   }
+
+  return headings;
 }
 
+/**
+ * Debounce function
+ */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout>
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  return function (...args: Parameters<T>) {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), wait);
+  };
 }
 
-export function generateMetaTitle(title: string): string {
-  return `${title} | TechPulse Daily`
+/**
+ * Check if we're in browser environment
+ */
+export function isBrowser(): boolean {
+  return typeof window !== 'undefined';
 }
