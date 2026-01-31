@@ -1,29 +1,34 @@
 # TechPulse Daily
 
-Your Daily Dose of Tech Innovation - A modern technology news and blog platform.
+Your Daily Dose of Tech Innovation - A modern tech news and tutorials website.
 
-## 🚀 Features
+## Features
 
-- **Modern Stack**: Built with React 18, TypeScript, and Vite
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Dark Mode**: System-aware theme switching
-- **SEO Optimized**: Meta tags, structured data, and semantic HTML
-- **Performance**: Optimized images, code splitting, and lazy loading
-- **Analytics**: PostHog integration for user analytics
-- **Ad Support**: Revive Ad Server integration
-- **Newsletter**: Built-in subscription system
+- 📱 Fully responsive design
+- 🌙 Dark mode support
+- 🔍 Article search
+- 📧 Newsletter subscription
+- 📊 PostHog analytics integration
+- 📺 Revive ad server integration
+- ⚡ Fast performance with Vite
 
-## 📦 Tech Stack
+## Tech Stack
 
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
+- **Framework**: React 18 + Vite
 - **Styling**: Tailwind CSS
-- **State Management**: TanStack Query (React Query)
 - **Routing**: React Router v6
-- **Icons**: Lucide React
+- **State Management**: TanStack Query
 - **Analytics**: PostHog
+- **Ads**: Revive Adserver
 
-## 🛠️ Development
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
 # Install dependencies
@@ -39,37 +44,46 @@ npm run build
 npm run preview
 ```
 
-## 📁 Project Structure
+### Environment Variables
+
+Create a `.env.local` file based on `.env.production`:
+
+```env
+VITE_SITE_ID=your-site-id
+VITE_SITE_NAME=your-site-name
+VITE_SITE_URL=https://your-domain.com
+VITE_API_URL=https://api.example.com
+VITE_POSTHOG_KEY=your-posthog-key
+VITE_POSTHOG_HOST=https://us.i.posthog.com
+VITE_REVIVE_URL=https://ads.example.com
+VITE_REVIVE_ID=1
+```
+
+## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── ads/          # Ad components (Revive integration)
-│   ├── layout/       # Layout components (Header, Footer, Sidebar)
-│   └── ui/           # Reusable UI components
-├── contexts/         # React contexts (Theme)
-├── hooks/            # Custom hooks
-├── lib/              # Utilities and constants
-├── pages/            # Page components
-├── services/         # API and external services
-└── types/            # TypeScript types
+│   ├── ads/           # Ad components (Revive)
+│   ├── layout/        # Header, Footer, Sidebar
+│   └── ui/            # Reusable UI components
+├── contexts/          # React contexts (Theme)
+├── hooks/             # Custom hooks
+├── lib/               # Utilities and constants
+├── pages/             # Page components
+├── services/          # API and external services
+└── types/             # TypeScript types
 ```
 
-## 🔧 Environment Variables
+## Routes
 
-Create a `.env.production` file with the following variables:
+- `/` - Homepage
+- `/artigo/:slug` - Article detail
+- `/categoria/:slug` - Category listing
+- `/sobre` - About page
+- `/contato` - Contact page
+- `/busca` - Search page
 
-```env
-VITE_SITE_ID=your-site-id
-VITE_SITE_NAME=TechPulse Daily
-VITE_SITE_URL=https://your-domain.com
-VITE_API_URL=https://api.your-domain.com
-VITE_POSTHOG_KEY=your-posthog-key
-VITE_POSTHOG_HOST=https://us.i.posthog.com
-VITE_REVIVE_URL=https://ads.your-domain.com
-VITE_REVIVE_ID=1
-```
+## License
 
-## 📄 License
-
-Copyright © 2024 TechPulse Daily. All rights reserved.
+MIT License
