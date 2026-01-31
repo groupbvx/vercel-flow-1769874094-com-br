@@ -1,146 +1,169 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Target, Award, Mail } from 'lucide-react'
+import { Users, Target, Award, Zap } from 'lucide-react'
+import { trackPageView } from '@/services/analytics'
+import { generateMetaTitle } from '@/lib/utils'
 import { SITE_CONFIG } from '@/lib/constants'
-import Breadcrumb from '@/components/ui/Breadcrumb'
 import NewsletterForm from '@/components/ui/NewsletterForm'
 
 export default function AboutPage() {
   useEffect(() => {
-    document.title = `Sobre | ${SITE_CONFIG.name}`
+    document.title = generateMetaTitle('Sobre Nós')
+    trackPageView('about')
   }, [])
 
+  const values = [
+    {
+      icon: Target,
+      title: 'Precisão',
+      description: 'Informações verificadas e atualizadas sobre o mundo da tecnologia.',
+    },
+    {
+      icon: Zap,
+      title: 'Inovação',
+      description: 'Sempre à frente das tendências, trazendo o que há de mais novo.',
+    },
+    {
+      icon: Users,
+      title: 'Comunidade',
+      description: 'Construímos uma comunidade de entusiastas e profissionais de tecnologia.',
+    },
+    {
+      icon: Award,
+      title: 'Qualidade',
+      description: 'Conteúdo de alta qualidade, escrito por especialistas da área.',
+    },
+  ]
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary-500 to-accent-500 py-12">
-        <div className="container-custom">
-          <Breadcrumb
-            items={[{ label: 'Sobre' }]}
-            className="mb-4 text-white/70"
-          />
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Sobre o {SITE_CONFIG.name}
-          </h1>
-          <p className="text-lg text-white/80 max-w-2xl">
-            {SITE_CONFIG.tagline}
-          </p>
-        </div>
+    <div className="container-main py-8">
+      {/* Breadcrumb */}
+      <nav className="mb-6 text-sm" aria-label="Breadcrumb">
+        <ol className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+          <li>
+            <Link to="/" className="hover:text-primary-500 transition-colors">
+              Home
+            </Link>
+          </li>
+          <li>/</li>
+          <li className="text-gray-900 dark:text-gray-100">Sobre</li>
+        </ol>
+      </nav>
+
+      {/* Hero */}
+      <header className="text-center max-w-3xl mx-auto mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Sobre o {SITE_CONFIG.name}
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-400">
+          Somos apaixonados por tecnologia e dedicados a trazer as melhores notícias, 
+          tutoriais e análises para você ficar sempre atualizado no mundo digital.
+        </p>
       </header>
 
-      {/* Content */}
-      <section className="container-custom py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Mission */}
-          <div className="prose dark:prose-dark max-w-none mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Nossa Missão
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-              O {SITE_CONFIG.name} nasceu com o objetivo de democratizar o acesso à informação 
-              sobre tecnologia. Acreditamos que todos devem ter acesso a conteúdo de qualidade 
-              sobre as últimas tendências, inovações e ferramentas do mundo tech.
+      {/* Mission */}
+      <section className="mb-16">
+        <div className="card p-8 md:p-12 bg-gradient-to-r from-primary-500 to-accent-500 text-white">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-4">Nossa Missão</h2>
+            <p className="text-lg text-white/90">
+              Democratizar o acesso à informação tecnológica de qualidade, 
+              capacitando desenvolvedores, entusiastas e profissionais de TI 
+              a tomar decisões informadas e se manterem competitivos no mercado.
             </p>
-            <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-              Nossa equipe de especialistas trabalha diariamente para trazer as notícias mais 
-              relevantes, tutoriais detalhados e análises aprofundadas sobre software, hardware, 
-              inteligência artificial e muito mais.
-            </p>
-          </div>
-
-          {/* Values */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="card p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 text-primary-500 rounded-xl mb-4">
-                <Target className="h-6 w-6" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Qualidade
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Conteúdo verificado e revisado por especialistas da área.
-              </p>
-            </div>
-            <div className="card p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-500 rounded-xl mb-4">
-                <Users className="h-6 w-6" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Comunidade
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Uma comunidade engajada de entusiastas de tecnologia.
-              </p>
-            </div>
-            <div className="card p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-accent-100 dark:bg-accent-900/30 text-accent-500 rounded-xl mb-4">
-                <Award className="h-6 w-6" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Inovação
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Sempre na vanguarda das tendências tecnológicas.
-              </p>
-            </div>
-          </div>
-
-          {/* What We Cover */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              O Que Cobrimos
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                'Notícias de Tecnologia',
-                'Reviews de Produtos',
-                'Tutoriais e Guias',
-                'Inteligência Artificial',
-                'Desenvolvimento de Software',
-                'Cloud Computing',
-                'Cybersegurança',
-                'Startups e Inovação',
-              ].map((topic) => (
-                <div
-                  key={topic}
-                  className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                >
-                  <div className="w-2 h-2 bg-primary-500 rounded-full" />
-                  <span className="text-gray-700 dark:text-gray-300">{topic}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact CTA */}
-          <div className="card p-8 text-center">
-            <Mail className="h-12 w-12 text-primary-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Entre em Contato
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Tem alguma sugestão, dúvida ou quer fazer uma parceria? 
-              Adoraríamos ouvir você!
-            </p>
-            <Link to="/contato" className="btn-primary">
-              Enviar Mensagem
-            </Link>
-          </div>
-
-          {/* Newsletter */}
-          <div className="mt-12 p-8 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl text-white text-center">
-            <h2 className="text-2xl font-bold mb-2">
-              Fique Atualizado
-            </h2>
-            <p className="text-white/80 mb-6 max-w-md mx-auto">
-              Inscreva-se na nossa newsletter e receba as últimas notícias 
-              diretamente no seu email.
-            </p>
-            <div className="max-w-md mx-auto">
-              <NewsletterForm variant="footer" />
-            </div>
           </div>
         </div>
+      </section>
+
+      {/* Values */}
+      <section className="mb-16">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center mb-12">
+          Nossos Valores
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {values.map((value) => (
+            <div key={value.title} className="card p-6 text-center">
+              <div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <value.icon className="w-7 h-7 text-primary-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                {value.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {value.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* What We Cover */}
+      <section className="mb-16">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              O Que Cobrimos
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              No {SITE_CONFIG.name}, você encontra uma ampla variedade de conteúdos 
+              sobre o universo da tecnologia:
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-start space-x-3">
+                <span className="w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  <strong>Notícias:</strong> As últimas novidades do mundo tech
+                </span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  <strong>Tutoriais:</strong> Guias passo a passo para desenvolvedores
+                </span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  <strong>Reviews:</strong> Análises detalhadas de produtos e serviços
+                </span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  <strong>IA & ML:</strong> Inteligência Artificial e Machine Learning
+                </span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="w-2 h-2 bg-primary-500 rounded-full mt-2" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  <strong>Cloud:</strong> Computação em nuvem e DevOps
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div className="card p-8 bg-gray-50 dark:bg-gray-800">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Fique Conectado
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Inscreva-se na nossa newsletter e receba conteúdo exclusivo diretamente no seu email.
+            </p>
+            <NewsletterForm source="about-page" />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Tem alguma dúvida ou sugestão?
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Entre em contato conosco. Adoramos ouvir nossos leitores!
+        </p>
+        <Link to="/contato" className="btn-primary">
+          Fale Conosco
+        </Link>
       </section>
     </div>
   )
