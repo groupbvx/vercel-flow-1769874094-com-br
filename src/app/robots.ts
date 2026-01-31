@@ -1,0 +1,16 @@
+import { MetadataRoute } from 'next';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vercel-flow-1769874094.com.br';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/admin/', '/_next/'],
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
+}
