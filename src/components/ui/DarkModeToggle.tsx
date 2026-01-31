@@ -1,45 +1,30 @@
-import { Sun, Moon, Monitor } from 'lucide-react'
+import { Moon, Sun, Monitor } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 
 export default function DarkModeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
 
   const cycleTheme = () => {
-    if (theme === 'light') {
-      setTheme('dark')
-    } else if (theme === 'dark') {
-      setTheme('system')
-    } else {
-      setTheme('light')
-    }
+    if (theme === 'light') setTheme('dark')
+    else if (theme === 'dark') setTheme('system')
+    else setTheme('light')
   }
 
   return (
     <button
       onClick={cycleTheme}
-      className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-      title={
-        theme === 'light' 
-          ? 'Modo claro' 
-          : theme === 'dark' 
-          ? 'Modo escuro' 
-          : 'Seguir sistema'
-      }
-      aria-label="Alternar tema"
+      className={cn(
+        'p-2 rounded-lg transition-colors',
+        'hover:bg-gray-100 dark:hover:bg-gray-800',
+        'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
+      )}
+      aria-label={`Tema atual: ${theme}. Clique para alternar.`}
+      title={`Tema: ${theme === 'light' ? 'Claro' : theme === 'dark' ? 'Escuro' : 'Sistema'}`}
     >
-      <Sun className={cn(
-        'h-5 w-5 transition-all',
-        resolvedTheme === 'light' && theme !== 'system' ? 'block' : 'hidden'
-      )} />
-      <Moon className={cn(
-        'h-5 w-5 transition-all',
-        resolvedTheme === 'dark' && theme !== 'system' ? 'block' : 'hidden'
-      )} />
-      <Monitor className={cn(
-        'h-5 w-5 transition-all',
-        theme === 'system' ? 'block' : 'hidden'
-      )} />
+      {theme === 'light' && <Sun className="w-5 h-5 text-amber-500" />}
+      {theme === 'dark' && <Moon className="w-5 h-5 text-primary-400" />}
+      {theme === 'system' && <Monitor className="w-5 h-5 text-gray-500 dark:text-gray-400" />}
     </button>
   )
 }

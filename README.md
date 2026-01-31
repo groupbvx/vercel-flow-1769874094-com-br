@@ -1,70 +1,75 @@
 # TechPulse Daily
 
-Your Daily Dose of Tech Innovation - Um site de tecnologia moderno construído com Next.js 14.
+Your Daily Dose of Tech Innovation - A modern technology news and blog platform.
 
-## Tecnologias
+## 🚀 Features
 
-- **Framework**: Next.js 14 (App Router)
+- **Modern Stack**: Built with React 18, TypeScript, and Vite
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Dark Mode**: System-aware theme switching
+- **SEO Optimized**: Meta tags, structured data, and semantic HTML
+- **Performance**: Optimized images, code splitting, and lazy loading
+- **Analytics**: PostHog integration for user analytics
+- **Ad Support**: Revive Ad Server integration
+- **Newsletter**: Built-in subscription system
+
+## 📦 Tech Stack
+
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
 - **Styling**: Tailwind CSS
+- **State Management**: TanStack Query (React Query)
+- **Routing**: React Router v6
+- **Icons**: Lucide React
 - **Analytics**: PostHog
-- **Ads**: Revive Adserver
-- **Deploy**: Vercel
 
-## Desenvolvimento
+## 🛠️ Development
 
 ```bash
-# Instalar dependências
+# Install dependencies
 npm install
 
-# Rodar em desenvolvimento
+# Start development server
 npm run dev
 
-# Build para produção
+# Build for production
 npm run build
 
-# Rodar em produção
-npm start
+# Preview production build
+npm run preview
 ```
 
-## Variáveis de Ambiente
-
-Copie `.env.production` para `.env.local` e ajuste conforme necessário:
-
-```bash
-cp .env.production .env.local
-```
-
-## Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 src/
-├── app/                    # App Router pages
-│   ├── artigo/[slug]/     # Página de artigo
-│   ├── categoria/[slug]/  # Página de categoria
-│   ├── sobre/             # Página sobre
-│   ├── contato/           # Página de contato
-│   └── busca/             # Página de busca
 ├── components/
-│   ├── layout/            # Header, Footer, Sidebar
-│   ├── ui/                # Componentes reutilizáveis
-│   └── ads/               # Componentes de anúncios
-├── hooks/                 # Custom React hooks
-├── lib/                   # Utilitários e constantes
-├── services/              # API services
-└── types/                 # TypeScript types
+│   ├── ads/          # Ad components (Revive integration)
+│   ├── layout/       # Layout components (Header, Footer, Sidebar)
+│   └── ui/           # Reusable UI components
+├── contexts/         # React contexts (Theme)
+├── hooks/            # Custom hooks
+├── lib/              # Utilities and constants
+├── pages/            # Page components
+├── services/         # API and external services
+└── types/            # TypeScript types
 ```
 
-## Features
+## 🔧 Environment Variables
 
-- ✅ Dark Mode
-- ✅ Busca
-- ✅ Newsletter
-- ✅ SEO otimizado
-- ✅ Analytics (PostHog)
-- ✅ Ads (Revive)
-- ✅ Responsivo
-- ✅ Performance otimizada
+Create a `.env.production` file with the following variables:
 
-## Licença
+```env
+VITE_SITE_ID=your-site-id
+VITE_SITE_NAME=TechPulse Daily
+VITE_SITE_URL=https://your-domain.com
+VITE_API_URL=https://api.your-domain.com
+VITE_POSTHOG_KEY=your-posthog-key
+VITE_POSTHOG_HOST=https://us.i.posthog.com
+VITE_REVIVE_URL=https://ads.your-domain.com
+VITE_REVIVE_ID=1
+```
 
-Proprietary - © TechPulse Daily
+## 📄 License
+
+Copyright © 2024 TechPulse Daily. All rights reserved.

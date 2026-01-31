@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vercel-flow-1769874094.com.br/sitemap.xml

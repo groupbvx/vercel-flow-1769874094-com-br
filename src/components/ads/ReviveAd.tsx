@@ -7,73 +7,46 @@ interface ReviveAdProps {
   className?: string
 }
 
-declare global {
-  interface Window {
-    reviveAsync?: Record<string, {
-      id: string
-      zones: Array<{
-        zoneid: string
-        seq: number
-      }>
-    }>
-  }
-}
-
 export default function ReviveAd({ zoneId, className }: ReviveAdProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const initialized = useRef(false)
+  const scriptLoadedRef = useRef(false)
 
   useEffect(() => {
-    if (!REVIVE_CONFIG.url || !zoneId || initialized.current) {
-      return
-    }
+    if (!REVIVE_CONFIG.url || !zoneId) return
 
-    initialized.current = true
+    const container = containerRef.current
+    if (!container) return
 
-    const loadRevive = () => {
-      const scriptId = 'revive-script'
-      let script = document.getElementById(scriptId) as HTMLScriptElement | null
+    // Unique ID for this ad placement
+    const placementId = `revive-${zoneId}-${Math.random().toString(36).substr(2, 9)}`
+    container.id = placementId
 
-      if (!script) {
-        script = document.createElement('script')
-        script.id = scriptId
-        script.src = `${REVIVE_CONFIG.url}/www/delivery/asyncjs.php`
-        script.async = true
-        document.head.appendChild(script)
-      }
+    // Create the invocation code
+    const invocationCode = document.createElement('ins')
+    invocationCode.setAttribute('data-revive-zoneid', zoneId)
+    invocationCode.setAttribute('data-revive-id', REVIVE_CONFIG.id)
+    container.appendChild(invocationCode)
 
-      script.onload = () => {
-        if (!window.reviveAsync) {
-          window.reviveAsync = {}
-        }
-
-        const asyncId = REVIVE_CONFIG.id
-
-        if (!window.reviveAsync[asyncId]) {
-          window.reviveAsync[asyncId] = {
-            id: asyncId,
-            zones: [],
-          }
-        }
-
-        const seq = window.reviveAsync[asyncId].zones.length
-
-        window.reviveAsync[asyncId].zones.push({
-          zoneid: zoneId,
-          seq: seq,
-        })
-
-        if (containerRef.current) {
-          const ins = document.createElement('ins')
-          ins.dataset.reviveZoneid = zoneId
-          ins.dataset.reviveId = asyncId
-          ins.dataset.reviveSeq = seq.toString()
-          containerRef.current.appendChild(ins)
-        }
+    // Load Revive script if not already loaded
+    if (!scriptLoadedRef.current) {
+      const script = document.createElement('script')
+      script.src = `${REVIVE_CONFIG.url}/www/delivery/asyncjs.php`
+      script.async = true
+      document.body.appendChild(script)
+      scriptLoadedRef.current = true
+    } else {
+      // Refresh ads if script already loaded
+      if (typeof (window as any).reviveAsync !== 'undefined') {
+        (window as any).reviveAsync[REVIVE_CONFIG.id]?.refresh()
       }
     }
 
-    loadRevive()
+    return () => {
+      // Cleanup
+      if (container) {
+        container.innerHTML = ''
+      }
+    }
   }, [zoneId])
 
   if (!REVIVE_CONFIG.url || !zoneId) {
@@ -83,7 +56,8 @@ export default function ReviveAd({ zoneId, className }: ReviveAdProps) {
   return (
     <div
       ref={containerRef}
-      className={cn('revive-ad flex items-center justify-center min-h-[90px]', className)}
+      className={cn('ad-container', className)}
+      aria-label="Anúncio"
     />
   )
 }
