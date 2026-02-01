@@ -1,37 +1,5 @@
 import { config } from '../lib/config';
-
-/**
- * Interface para artigo
- */
-export interface Article {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  mainImage?: string;
-  imageUrl?: string;
-  author?: string;
-  publishedAt: string;
-  updatedAt?: string;
-  tags?: string[];
-  category?: string;
-  categorySlug?: string;
-  readingTime?: number;
-}
-
-/**
- * Interface para resposta paginada
- */
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-  };
-}
+import type { Article, PaginatedResponse } from '../types';
 
 /**
  * Transforma URLs relativas de imagens para usar o proxy

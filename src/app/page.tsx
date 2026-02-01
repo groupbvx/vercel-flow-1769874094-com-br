@@ -1,169 +1,228 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, TrendingUp } from 'lucide-react';
+import { getArticles, getFeaturedArticle } from '@/services/ArticleService';
 import { ArticleCard } from '@/components/ui/ArticleCard';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { NewsletterForm } from '@/components/NewsletterForm';
-import { getArticles, getFeaturedArticles } from '@/services/ArticleService';
-import { SITE_CONFIG, CATEGORIES } from '@/lib/constants';
+import { AdSpot } from '@/components/AdSpot';
+import { CATEGORIES, SITE_CONFIG } from '@/lib/constants';
 
-export const revalidate = 300; // Revalidate every 5 minutes
+export const revalidate = 300;
 
-async function FeaturedSection() {
-  const featured = await getFeaturedArticles(5);
-  const mainFeatured = featured[0];
-  const secondaryFeatured = featured.slice(1, 5);
-
-  if (!mainFeatured) {
+async function HeroSection() {
+  const featuredArticle = await getFeaturedArticle();
+  
+  if (!featuredArticle) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>No featured articles available.</p>
-      </div>
+      <section className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 py-16">
+        <div className="container-main text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            {SITE_CONFIG.name}
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            {SITE_CONFIG.tagline}
+          </p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <>
-      {/* Hero Featured Article */}
-      <section className="mb-12">
-        <ArticleCard article={mainFeatured} variant="featured" showAuthor />
-      </section>
-
-      {/* Secondary Featured */}
-      {secondaryFeatured.length > 0 && (
-        <section className="mb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {secondaryFeatured.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        </section>
-      )}
-    </>
+    <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-8 md:py-12">
+      <div className="container-main">
+        <ArticleCard article={featuredArticle} variant="featured" showAuthor />
+      </div>
+    </section>
   );
 }
 
 async function LatestArticles() {
-  const response = await getArticles({ pageSize: 9 });
+  const response = await getArticles({ pageSize: 6 });
   const articles = response.data;
 
   if (articles.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>No articles found.</p>
+      <div className="text-center py-12">
+        <p className="text-gray-500 dark:text-gray-400">
+          No articles available yet. Check back soon!
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {articles.map((article) => (
-        <ArticleCard key={article.id} article={article} variant="horizontal" />
+        <ArticleCard key={article.id} article={article} />
       ))}
     </div>
   );
 }
 
-function FeaturedSkeleton() {
+async function TrendingArticles() {
+  const response = await getArticles({ pageSize: 4 });
+  const articles = response.data;
+
+  if (articles.length === 0) return null;
+
   return (
-    <>
-      <div className="skeleton h-[400px] rounded-2xl mb-12" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="skeleton h-64 rounded-xl" />
-        ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {articles.slice(0, 4).map((article, index) => (
+        <Link
+          key={article.id}
+          href={`/artigo/${article.slug}`}
+          className="group flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-colors"
+        >
+          <span className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-sm font-bold text-primary">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 text-sm">
+              {article.title}
+            </h3>
+            {article.category && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                {typeof article.category === 'string' ? article.category : article.category.name}
+              </span>
+            )}
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function ArticlesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="skeleton h-72 rounded-xl" />
+      ))}
+    </div>
+  );
+}
+
+function HeroSkeleton() {
+  return (
+    <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-8 md:py-12">
+      <div className="container-main">
+        <div className="skeleton h-[400px] rounded-xl" />
       </div>
-    </>
-  );
-}
-
-function LatestSkeleton() {
-  return (
-    <div className="space-y-6">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="skeleton h-32 rounded-xl" />
-      ))}
-    </div>
+    </section>
   );
 }
 
 export default function HomePage() {
   return (
-    <div className="container-main py-8">
-      {/* Featured Section */}
-      <Suspense fallback={<FeaturedSkeleton />}>
-        <FeaturedSection />
+    <>
+      {/* Hero Section with Featured Article */}
+      <Suspense fallback={<HeroSkeleton />}>
+        <HeroSection />
       </Suspense>
 
-      {/* Main Content with Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2">
-          {/* Latest Articles */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
+      {/* Trending Section */}
+      <section className="py-8 bg-gray-50 dark:bg-gray-800/50">
+        <div className="container-main">
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              Trending Now
+            </h2>
+          </div>
+          <Suspense fallback={<div className="skeleton h-24 rounded-xl" />}>
+            <TrendingArticles />
+          </Suspense>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <div className="container-main py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Articles Column */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Latest Articles
               </h2>
               <Link
                 href="/categoria/news"
-                className="flex items-center space-x-1 text-primary hover:text-blue-600 text-sm font-medium transition-colors"
+                className="text-primary hover:text-blue-600 font-medium text-sm flex items-center gap-1"
               >
-                <span>View all</span>
+                View All
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
-            <Suspense fallback={<LatestSkeleton />}>
+            <Suspense fallback={<ArticlesSkeleton />}>
               <LatestArticles />
             </Suspense>
-          </section>
 
-          {/* Categories Section */}
-          <section className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Explore by Category
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {CATEGORIES.map((category) => (
-                <Link
-                  key={category.slug}
-                  href={`/categoria/${category.slug}`}
-                  className="card p-6 text-center hover:shadow-md transition-all group"
-                >
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {category.description}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
+            {/* In-Content Ad */}
+            <AdSpot position="in-content" className="my-8" />
 
-          {/* Newsletter CTA */}
-          <section className="mt-12 card p-8 bg-gradient-to-r from-primary to-accent text-white">
-            <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-2xl font-bold mb-2">
-                Don&apos;t miss any updates!
+            {/* Categories Section */}
+            <section className="mt-12">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Explore Topics
               </h2>
-              <p className="text-white/80 mb-6">
-                Subscribe to our newsletter and receive the best tech content
-                directly in your inbox.
-              </p>
-              <NewsletterForm source="homepage-cta" variant="dark" />
-            </div>
-          </section>
-        </div>
-
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24">
-            <Sidebar />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {CATEGORIES.map((category) => (
+                  <Link
+                    key={category.slug}
+                    href={`/categoria/${category.slug}`}
+                    className="group p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:shadow-lg transition-all"
+                  >
+                    <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors mb-1">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                      {category.description}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
           </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-1">
+            <div className="sticky top-24">
+              <Suspense fallback={<div className="skeleton h-[600px] rounded-xl" />}>
+                <SidebarWithArticles />
+              </Suspense>
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+
+      {/* Newsletter Section */}
+      <section className="bg-gradient-to-r from-primary to-accent py-16">
+        <div className="container-main">
+          <div className="max-w-2xl mx-auto text-center text-white">
+            <h2 className="text-3xl font-bold mb-4">
+              Stay Ahead of the Curve
+            </h2>
+            <p className="text-white/80 mb-8">
+              Subscribe to our newsletter and get the latest tech news, tutorials, and insights delivered straight to your inbox every week.
+            </p>
+            <div className="max-w-md mx-auto">
+              <NewsletterForm 
+                source="homepage-footer" 
+                variant="dark"
+                buttonText="Subscribe Now"
+                title=""
+                description=""
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
+}
+
+async function SidebarWithArticles() {
+  const response = await getArticles({ pageSize: 5 });
+  return <Sidebar popularArticles={response.data} />;
 }

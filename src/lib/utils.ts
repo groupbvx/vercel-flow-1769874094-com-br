@@ -1,79 +1,110 @@
-import { clsx, type ClassValue } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 /**
- * Merge Tailwind CSS classes with clsx
+ * Combina classes CSS com suporte a Tailwind
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Format date for display
+ * Formata data para exibição
  */
-export function formatDate(dateString: string, locale = 'en-US'): string {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-  } catch {
-    return dateString;
+export function formatDate(date: string | Date, locale: string = 'en-US'): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Formata data longa
+ */
+export function formatDateLong(date: string | Date, locale: string = 'en-US'): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Formata data relativa (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
   }
-}
 
-/**
- * Format relative time (e.g., "2 hours ago")
- */
-export function formatRelativeTime(dateString: string, locale = 'en-US'): string {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-
-    if (diffInSeconds < 60) {
-      return rtf.format(-diffInSeconds, 'second');
-    }
-    if (diffInSeconds < 3600) {
-      return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
-    }
-    if (diffInSeconds < 86400) {
-      return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
-    }
-    if (diffInSeconds < 604800) {
-      return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
-    }
-    
-    return formatDate(dateString, locale);
-  } catch {
-    return dateString;
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min${diffInMinutes > 1 ? 's' : ''} ago`;
   }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  if (diffInWeeks < 4) {
+    return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInYears = Math.floor(diffInDays / 365);
+  return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
 }
 
 /**
- * Calculate reading time from content
+ * Formata número
  */
-export function calculateReadingTime(content: string): number {
-  const wordsPerMinute = 200;
-  const text = content.replace(/<[^>]*>/g, '');
-  const wordCount = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+export function formatNumber(num: number, locale: string = 'en-US'): string {
+  return num.toLocaleString(locale);
 }
 
 /**
- * Truncate text to specified length
+ * Formata moeda
+ */
+export function formatCurrency(
+  value: number,
+  currency: string = 'USD',
+  locale: string = 'en-US'
+): string {
+  return value.toLocaleString(locale, {
+    style: 'currency',
+    currency,
+  });
+}
+
+/**
+ * Trunca texto com ellipsis
  */
 export function truncateText(text: string, maxLength: number): string {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + '...';
 }
 
 /**
- * Generate slug from text
+ * Gera slug a partir de texto
  */
 export function slugify(text: string): string {
   return text
@@ -81,65 +112,173 @@ export function slugify(text: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
+    .replace(/(^-|-$)/g, '');
 }
 
 /**
- * Get image URL with fallback
+ * Calcula tempo de leitura
  */
-export function getImageUrl(
-  url: string | undefined | null,
-  fallback = '/placeholder.jpg'
-): string {
-  if (!url) return fallback;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  if (url.startsWith('/')) return url;
-  return `/${url}`;
-}
-
-/**
- * Generate meta title with template
- */
-export function generateMetaTitle(title: string, template = '%s | TechPulse Daily'): string {
-  return template.replace('%s', title);
-}
-
-/**
- * Extract headings from HTML content for TOC
- */
-export function extractHeadings(content: string): Array<{ id: string; text: string; level: number }> {
-  const headingRegex = /<h([2-4])[^>]*(?:id="([^"]*)")?[^>]*>([^<]+)<\/h\1>/gi;
-  const headings: Array<{ id: string; text: string; level: number }> = [];
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = parseInt(match[1]);
-    const id = match[2] || slugify(match[3]);
-    const text = match[3].trim();
-    headings.push({ id, text, level });
-  }
-
-  return headings;
+export function calculateReadingTime(content: string, wordsPerMinute: number = 200): number {
+  if (!content) return 1;
+  const words = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: unknown[]) => unknown>(
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  return function (...args: Parameters<T>) {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), wait);
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
 
 /**
- * Check if we're in browser environment
+ * Processa URL de imagem
+ * Retorna a URL correta ou um placeholder
+ */
+export function getImageUrl(imageUrl: string | null | undefined, fallback: string = '/placeholder.jpg'): string {
+  if (!imageUrl) return fallback;
+  
+  // Se já é uma URL completa, retorna
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // Se começa com /, é relativa ao domínio
+  if (imageUrl.startsWith('/')) {
+    return imageUrl;
+  }
+  
+  return fallback;
+}
+
+/**
+ * Extrai texto puro de HTML
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Gera ID único
+ */
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 15);
+}
+
+/**
+ * Verifica se está no cliente (browser)
+ */
+export function isClient(): boolean {
+  return typeof window !== 'undefined';
+}
+
+/**
+ * Alias para isClient - verificação de ambiente browser
  */
 export function isBrowser(): boolean {
   return typeof window !== 'undefined';
+}
+
+/**
+ * Verifica se é mobile
+ */
+export function isMobile(): boolean {
+  if (!isClient()) return false;
+  return window.innerWidth < 768;
+}
+
+/**
+ * Copia texto para clipboard
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (!isClient()) return false;
+  
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback para navegadores mais antigos
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return success;
+  }
+}
+
+/**
+ * Aguarda um tempo (para uso com async/await)
+ */
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Capitaliza a primeira letra
+ */
+export function capitalize(str: string): string {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Extrai headings de conteúdo HTML para Table of Contents
+ */
+export function extractHeadings(content: string): Array<{ id: string; text: string; level: number }> {
+  if (!content) return [];
+  
+  const headings: Array<{ id: string; text: string; level: number }> = [];
+  const headingRegex = /<h([2-4])[^>]*(?:id="([^"]*)")?[^>]*>(.*?)<\/h[2-4]>/gi;
+  
+  let match;
+  let counter = 0;
+  
+  while ((match = headingRegex.exec(content)) !== null) {
+    const level = parseInt(match[1], 10);
+    const existingId = match[2];
+    const text = stripHtml(match[3]);
+    
+    if (text) {
+      const id = existingId || `heading-${slugify(text)}-${counter}`;
+      headings.push({ id, text, level });
+      counter++;
+    }
+  }
+  
+  return headings;
+}
+
+/**
+ * Adiciona IDs aos headings no HTML para navegação
+ */
+export function addHeadingIds(content: string): string {
+  if (!content) return content;
+  
+  let counter = 0;
+  
+  return content.replace(
+    /<h([2-4])([^>]*)>(.*?)<\/h[2-4]>/gi,
+    (match, level, attrs, text) => {
+      // Se já tem id, manter
+      if (attrs.includes('id="')) return match;
+      
+      const plainText = stripHtml(text);
+      const id = `heading-${slugify(plainText)}-${counter}`;
+      counter++;
+      
+      return `<h${level}${attrs} id="${id}">${text}</h${level}>`;
+    }
+  );
 }

@@ -20,6 +20,7 @@ interface ArticlePageProps {
 }
 
 export const revalidate = 300;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const article = await getArticleBySlug(params.slug);
@@ -31,6 +32,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 
   const imageUrl = article.mainImage || article.imageUrl;
+  const authorName = article.author
+    ? typeof article.author === 'string'
+      ? article.author
+      : article.author.name
+    : undefined;
 
   return {
     title: article.title,
@@ -43,7 +49,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       images: imageUrl ? [{ url: imageUrl }] : undefined,
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
-      authors: article.author ? [typeof article.author === 'string' ? article.author : article.author.name] : undefined,
+      authors: authorName ? [authorName] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
@@ -55,10 +61,15 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 }
 
 export async function generateStaticParams() {
-  const response = await getArticles({ pageSize: 50 });
-  return response.data.map((article) => ({
-    slug: article.slug,
-  }));
+  try {
+    const response = await getArticles({ pageSize: 50 });
+    return response.data.map((article) => ({
+      slug: article.slug,
+    }));
+  } catch (error) {
+    console.warn('[ArticlePage] Could not fetch articles for static params:', error);
+    return [];
+  }
 }
 
 async function RelatedArticles({ slug }: { slug: string }) {

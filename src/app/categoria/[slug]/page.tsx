@@ -13,6 +13,7 @@ interface CategoryPageProps {
 }
 
 export const revalidate = 300;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const category = CATEGORIES.find((c) => c.slug === params.slug);
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return CATEGORIES.map((category) => ({
     slug: category.slug,
   }));

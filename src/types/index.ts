@@ -10,11 +10,11 @@ export interface Article {
   content: string;
   mainImage?: string;
   imageUrl?: string;
-  author?: Author;
+  author?: string | Author;
   publishedAt: string;
   updatedAt?: string;
   tags?: string[];
-  category?: Category;
+  category?: string | Category;
   categorySlug?: string;
   readingTime?: number;
 }
@@ -60,4 +60,18 @@ export interface SiteConfig {
     secondary: string;
     accent: string;
   };
+}
+
+export interface ReviveZones {
+  header?: string;
+  sidebar?: string;
+  inArticle1?: string;
+  inArticle2?: string;
+  stickyFooter?: string;
+}
+
+export interface AdConfig {
+  url: string;
+  id: string;
+  zones: ReviveZones;
 }

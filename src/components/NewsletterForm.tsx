@@ -1,135 +1,187 @@
 'use client';
 
-import { useState } from 'react';
-import { Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, FormEvent } from 'react';
 import { NewsletterService } from '@/services/NewsletterService';
 import { AnalyticsService } from '@/services/AnalyticsService';
+import { cn } from '@/lib/utils';
 
 interface NewsletterFormProps {
-  source: string;
-  variant?: 'light' | 'dark';
+  source?: string;
   className?: string;
-  showIcon?: boolean;
+  variant?: 'default' | 'compact' | 'inline' | 'dark';
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  successMessage?: string;
 }
 
-type FormStatus = 'idle' | 'loading' | 'success' | 'error';
-
+/**
+ * NewsletterForm - Newsletter subscription form
+ * Integrated with backend via NewsletterService
+ */
 export function NewsletterForm({
-  source,
-  variant = 'light',
+  source = 'newsletter_form',
   className,
-  showIcon = true,
+  variant = 'default',
+  title = 'Newsletter',
+  description = 'Get the best tips delivered to your inbox.',
+  buttonText = 'Subscribe',
+  successMessage = 'Successfully subscribed!',
 }: NewsletterFormProps) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<FormStatus>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    if (!email.trim()) return;
 
-    setStatus('loading');
-    setErrorMessage('');
+    // Honeypot check - if filled, it's a bot
+    if (honeypot) return;
 
-    try {
-      await NewsletterService.subscribe(email, source);
-      setStatus('success');
-      setEmail('');
-      
-      // Track conversion
-      AnalyticsService.captureNewsletterSubscription(email, source);
-    } catch (error) {
-      setStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Subscription failed. Please try again.');
+    if (!NewsletterService.validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;
     }
+
+    setLoading(true);
+    setError('');
+
+    const response = await NewsletterService.subscribe({
+      email,
+      source,
+    });
+
+    if (response.success) {
+      setSubmitted(true);
+      setEmail('');
+      AnalyticsService.captureNewsletterSubscribe(source, email);
+    } else {
+      setError(response.message);
+    }
+    setLoading(false);
   };
 
   const isDark = variant === 'dark';
 
-  if (status === 'success') {
+  if (submitted) {
     return (
-      <div className={cn(
-        'flex items-center justify-center gap-2 p-4 rounded-lg',
-        isDark ? 'bg-white/10 text-white' : 'bg-green-50 text-green-700',
-        className
-      )}>
-        <CheckCircle className="w-5 h-5" />
-        <span className="font-medium">Thanks for subscribing!</span>
+      <div className={cn('text-center p-4', className)}>
+        <div className={cn(
+          'font-medium',
+          isDark ? 'text-white' : 'text-green-600'
+        )}>
+          {successMessage}
+        </div>
+        <button
+          onClick={() => setSubmitted(false)}
+          className={cn(
+            'mt-2 text-sm transition-colors',
+            isDark ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+          )}
+        >
+          Subscribe another email
+        </button>
       </div>
     );
   }
 
-  return (
-    <form onSubmit={handleSubmit} className={cn('w-full', className)}>
-      <div className={cn(
-        'flex flex-col sm:flex-row gap-2',
-        isDark ? 'text-white' : ''
-      )}>
-        <div className="relative flex-1">
-          {showIcon && (
-            <Mail className={cn(
-              'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5',
-              isDark ? 'text-white/50' : 'text-gray-400'
-            )} />
+  if (variant === 'compact' || variant === 'dark') {
+    return (
+      <form onSubmit={handleSubmit} className={cn('flex gap-2', className)}>
+        {/* Honeypot */}
+        <input
+          type="text"
+          name="website_url"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          className="absolute -left-[9999px]"
+          aria-hidden="true"
+        />
+
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError('');
+          }}
+          placeholder="Your email"
+          className={cn(
+            'flex-1 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50',
+            isDark 
+              ? 'bg-white/20 text-white placeholder-white/60 border border-white/30' 
+              : 'bg-white border border-gray-300 text-gray-900'
           )}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-            disabled={status === 'loading'}
-            className={cn(
-              'w-full py-3 rounded-lg transition-all',
-              showIcon ? 'pl-10 pr-4' : 'px-4',
-              isDark 
-                ? 'bg-white/10 border border-white/20 text-white placeholder-white/50 focus:bg-white/20 focus:border-white/40' 
-                : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:border-primary focus:ring-2 focus:ring-primary/20',
-              'focus:outline-none disabled:opacity-50'
-            )}
-          />
-        </div>
+          data-bvx-track="NEWSLETTER_INPUT"
+          required
+        />
         <button
           type="submit"
-          disabled={status === 'loading' || !email.trim()}
+          disabled={loading}
           className={cn(
-            'px-6 py-3 font-medium rounded-lg transition-all',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            'flex items-center justify-center gap-2',
+            'px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50',
             isDark
               ? 'bg-white text-primary hover:bg-gray-100'
               : 'bg-primary text-white hover:bg-blue-600'
           )}
+          data-bvx-track="NEWSLETTER_SUBMIT"
         >
-          {status === 'loading' ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Subscribing...
-            </>
-          ) : (
-            'Subscribe'
-          )}
+          {loading ? '...' : buttonText}
         </button>
-      </div>
+      </form>
+    );
+  }
 
-      {status === 'error' && (
-        <div className={cn(
-          'flex items-center gap-2 mt-2 text-sm',
-          isDark ? 'text-red-300' : 'text-red-600'
-        )}>
-          <AlertCircle className="w-4 h-4" />
-          <span>{errorMessage}</span>
+  return (
+    <div className={cn('p-6 bg-gray-50 dark:bg-gray-800 rounded-xl', className)}>
+      {title && <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>}
+      {description && <p className="text-gray-600 dark:text-gray-400 mb-4">{description}</p>}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Honeypot */}
+        <input
+          type="text"
+          name="website_url"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          className="absolute -left-[9999px]"
+          aria-hidden="true"
+        />
+
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (error) setError('');
+            }}
+            placeholder="Your best email"
+            className={cn(
+              'input',
+              error && 'border-red-500'
+            )}
+            data-bvx-track="NEWSLETTER_INPUT"
+            required
+          />
+          {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
         </div>
-      )}
 
-      <p className={cn(
-        'text-xs mt-2',
-        isDark ? 'text-white/60' : 'text-gray-500'
-      )}>
-        No spam, unsubscribe at any time.
-      </p>
-    </form>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full btn-primary py-3"
+          data-bvx-track="NEWSLETTER_SUBMIT"
+        >
+          {loading ? 'Sending...' : buttonText}
+        </button>
+      </form>
+    </div>
   );
 }
